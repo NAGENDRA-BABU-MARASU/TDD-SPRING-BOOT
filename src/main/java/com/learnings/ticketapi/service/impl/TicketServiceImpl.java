@@ -2,11 +2,15 @@ package com.learnings.ticketapi.service.impl;
 
 import com.learnings.ticketapi.dto.TicketDto;
 import com.learnings.ticketapi.dto.TicketFilterDto;
+import com.learnings.ticketapi.exception.MissingDescriptionException;
+import com.learnings.ticketapi.model.Status;
 import com.learnings.ticketapi.model.Ticket;
 import com.learnings.ticketapi.repository.TicketRepository;
 import com.learnings.ticketapi.service.TicketService;
+import com.learnings.ticketapi.util.ErrorMessages;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -19,10 +23,26 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDto createTicket(TicketDto ticketDto) {
-        Ticket ticket = new Ticket();
-        Ticket savedTicket = ticketRepository.save(ticket);
+        if(ticketDto.description() == null || ticketDto.description().isEmpty()){
+            throw new MissingDescriptionException(ErrorMessages.DESCRIPTION_REQUIRED);
+        }
 
-        return null;
+        Ticket newTicket = new Ticket();
+        newTicket.setDescription(ticketDto.description());
+        newTicket.setStatus(Status.NEW);
+        newTicket.setCreatedTime(LocalDateTime.now());
+
+        Ticket savedTicket = ticketRepository.save(newTicket);
+
+        return new TicketDto(
+                savedTicket.getId(),
+                savedTicket.getDescription(),
+                savedTicket.getStatus(),
+                savedTicket.getCreatedTime(),
+                null,
+                null,
+                null
+        );
     }
 
     @Override
