@@ -137,4 +137,42 @@ public class TicketServiceTest {
         assertThrows(InvalidTicketStateException.class,
                 () -> ticketService.assignAgentToTicket(ticketId, agentId));
     }
+
+    @Test
+    void givenTicketInProgress_whenResolving_thenStatusIsResolved() {
+        Long ticketId = 1L;
+        String description = "description";
+        Ticket ticket = new Ticket(ticketId, description, Status.IN_PROGRESS, LocalDateTime.now());
+        Ticket savedTicket = new Ticket(ticketId, description, Status.RESOLVED, LocalDateTime.now());
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.save(any(Ticket.class))).thenReturn(savedTicket);
+
+        TicketDto updatedTicket = ticketService.resolveTicket(ticketId);
+
+        assertEquals(Status.RESOLVED, updatedTicket.status());
+    }
+
+    @Test
+    void givenNonExistentTicket_whenResolving_thenThrowException() {
+        Long nonExistentTicketId = 999L;
+
+        when(ticketRepository.findById(nonExistentTicketId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(TicketNotFoundException.class,
+                () -> ticketService.resolveTicket(nonExistentTicketId));
+    }
+
+    @Test
+    void givenTicketNotInProgressState_whenResolving_thenThrowException() {
+        Long ticketId = 1L;
+        String description = "description";
+        Ticket ticket = new Ticket(ticketId, description, Status.NEW, LocalDateTime.now());
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+
+        assertThrows(InvalidTicketStateException.class,
+                () -> ticketService.resolveTicket(ticketId));
+    }
 }
