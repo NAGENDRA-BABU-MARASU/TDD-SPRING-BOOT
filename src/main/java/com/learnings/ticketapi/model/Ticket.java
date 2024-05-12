@@ -12,6 +12,8 @@ public class Ticket {
     private LocalDateTime closedDate;
     private String resolutionSummary;
 
+    private Agent assignedAgent;
+
     public Ticket() {}
 
     public Ticket(Long id,String description, Status status, LocalDateTime createdTime) {
@@ -67,6 +69,14 @@ public class Ticket {
 
     public void setResolutionSummary(String resolutionSummary) {
         this.resolutionSummary = resolutionSummary;
+    }
+
+    public Agent getAssignedAgent() {
+        return assignedAgent;
+    }
+
+    public void setAssignedAgent(Agent assignedAgent) {
+        this.assignedAgent = assignedAgent;
     }
 
     @Override
