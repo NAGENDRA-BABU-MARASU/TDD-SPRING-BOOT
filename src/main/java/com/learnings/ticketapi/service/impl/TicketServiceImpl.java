@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TicketServiceImpl implements TicketService {
@@ -112,7 +113,22 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public List<TicketDto> getTickets(TicketFilterDto ticketFilterDto) {
-        return List.of();
+        if(ticketFilterDto.startDate() != null
+            && ticketFilterDto.endDate() != null
+            && ticketFilterDto.endDate().isBefore(ticketFilterDto.startDate())){
+            throw new InvalidDateRangeException(ErrorMessages.INVALID_DATE_RANGE);
+        }
+
+        List<Ticket> filteredTickets = ticketRepository.findWithFilters(
+                ticketFilterDto.status(),
+                ticketFilterDto.startDate(),
+                ticketFilterDto.endDate(),
+                ticketFilterDto.assignedAgent()
+        );
+
+        return filteredTickets.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     @Override

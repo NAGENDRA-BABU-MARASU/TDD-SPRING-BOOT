@@ -1,6 +1,7 @@
 package com.learnings.ticketapi.service;
 
 import com.learnings.ticketapi.dto.TicketDto;
+import com.learnings.ticketapi.dto.TicketFilterDto;
 import com.learnings.ticketapi.exception.*;
 import com.learnings.ticketapi.model.Agent;
 import com.learnings.ticketapi.model.Status;
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -297,6 +299,34 @@ public class TicketServiceTest {
 
         assertThrows(TicketNotFoundException.class,
                 () -> ticketService.getTicketById(nonExistentTicketId));
+    }
+
+    @Test
+    void givenFilterCriteria_whenGettingTickets_thenReturnFilteredTickets() {
+        TicketFilterDto filterDto = new TicketFilterDto(List.of(Status.NEW),null,null,null);
+        List<Ticket> filteredTickets = List.of(
+                new Ticket(1L, "Ticket 1", Status.NEW, LocalDateTime.now()),
+                new Ticket(2L, "Ticket 22", Status.NEW, LocalDateTime.now())
+        );
+
+        when(ticketRepository.findWithFilters(anyList(), any(), any(), any())).thenReturn(filteredTickets);
+
+        List<TicketDto> retrievedTickets = ticketService.getTickets(filterDto);
+
+        assertEquals(2,  retrievedTickets.size());
+    }
+
+    @Test
+    void givenInvalidDateRange_whenGettingTickets_thenThrowException() {
+        TicketFilterDto filterDto = new TicketFilterDto(
+                null,
+                LocalDateTime.of(2023, 6, 25, 0, 0),
+                LocalDateTime.of(1999, 6, 25, 0, 0),
+                null
+        );
+
+        assertThrows(InvalidDateRangeException.class,
+                () -> ticketService.getTickets(filterDto));
     }
 
 }
