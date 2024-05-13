@@ -227,4 +227,54 @@ public class TicketServiceTest {
         assertThrows(InvalidTicketStateException.class,
                 () -> ticketService.closeTicket(ticketId));
     }
+
+    @Test
+    void givenTicketDescriptionAndResolutionSummary_whenUpdating_thenDescriptionAndResolutionSummaryAreUpdated() {
+        Long ticketId = 1L;
+        LocalDateTime now = LocalDateTime.now();
+        TicketDto ticketDto = new TicketDto(ticketId, "description", Status.RESOLVED, LocalDateTime.now(), null, null, "resolutionSummary");
+        Ticket originalTicket = new Ticket(ticketId, ticketDto.description(), Status.RESOLVED, LocalDateTime.now());
+        originalTicket.setResolutionSummary(ticketDto.resolutionSummary());
+
+        Ticket updatedTicketFromRepo = new Ticket(ticketId, "updated description", Status.RESOLVED, LocalDateTime.now());
+        updatedTicketFromRepo.setResolutionSummary("updated resolution summary");
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(originalTicket));
+        when(ticketRepository.save(any(Ticket.class))).thenReturn(updatedTicketFromRepo);
+
+        TicketDto updatedTicket = ticketService.updateTicket(ticketId, ticketDto);
+
+        assertEquals(updatedTicketFromRepo.getDescription(), updatedTicket.description());
+        assertEquals(updatedTicketFromRepo.getResolutionSummary(), updatedTicket.resolutionSummary());
+    }
+
+    @Test
+    void givenNonExistentTicket_whenUpdating_thenThrowException() {
+        Long nonExistentTicketId = 999L;
+        String description = "description";
+        String resolutionSummary = "summary";
+        TicketDto ticketDto = new TicketDto(nonExistentTicketId, description, Status.RESOLVED, LocalDateTime.now(), null, null, resolutionSummary);
+
+        when(ticketRepository.findById(nonExistentTicketId)).thenReturn(Optional.empty());
+
+        assertThrows(TicketNotFoundException.class,
+                () -> ticketService.updateTicket(nonExistentTicketId, ticketDto));
+    }
+
+    @Test
+    void givenClosedTicket_whenUpdating_thenThrowException() {
+        Long ticketId = 1L;
+        String description = "description";
+        String resolutionSummary = "summary.";
+        TicketDto ticketDto = new TicketDto(ticketId, description, Status.CLOSED, LocalDateTime.now(), null, null, resolutionSummary);
+        Ticket ticket = new Ticket(ticketId, description, Status.CLOSED, LocalDateTime.now());
+        ticket.setResolutionSummary(resolutionSummary);
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+
+        assertThrows(InvalidTicketStateException.class,
+                () -> ticketService.updateTicket(ticketId, ticketDto));
+
+    }
+
 }
