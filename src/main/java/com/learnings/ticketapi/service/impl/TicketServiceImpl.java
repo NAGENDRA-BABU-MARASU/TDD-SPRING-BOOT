@@ -2,10 +2,7 @@ package com.learnings.ticketapi.service.impl;
 
 import com.learnings.ticketapi.dto.TicketDto;
 import com.learnings.ticketapi.dto.TicketFilterDto;
-import com.learnings.ticketapi.exception.AgentNotFoundException;
-import com.learnings.ticketapi.exception.InvalidTicketStateException;
-import com.learnings.ticketapi.exception.MissingDescriptionException;
-import com.learnings.ticketapi.exception.TicketNotFoundException;
+import com.learnings.ticketapi.exception.*;
 import com.learnings.ticketapi.model.Agent;
 import com.learnings.ticketapi.model.Status;
 import com.learnings.ticketapi.model.Ticket;
@@ -13,7 +10,6 @@ import com.learnings.ticketapi.repository.AgentRepository;
 import com.learnings.ticketapi.repository.TicketRepository;
 import com.learnings.ticketapi.service.TicketService;
 import com.learnings.ticketapi.util.ErrorMessages;
-import org.springframework.jdbc.core.metadata.HsqlTableMetaDataProvider;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -71,9 +67,9 @@ public class TicketServiceImpl implements TicketService {
                 ticket.getDescription(),
                 ticket.getStatus(),
                 ticket.getCreatedTime(),
-                null,
+                ticket.getClosedDate(),
                 ticket.getAssignedAgent() != null ? ticket.getAssignedAgent().getName() : null,
-                null
+                ticket.getResolutionSummary()
         );
     }
 
@@ -93,11 +89,6 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketDto closeTicket(Long ticketId) {
-        return null;
-    }
-
-    @Override
     public TicketDto updateTicket(Long ticketId, TicketDto ticketDto) {
         return null;
     }
@@ -112,5 +103,25 @@ public class TicketServiceImpl implements TicketService {
         return List.of();
     }
 
+    @Override
+    public TicketDto closeTicket(Long ticketId){
+        Ticket existingTicket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+        validateTicketBeforeClosing(existingTicket);
+        existingTicket.setStatus(Status.CLOSED);
+        existingTicket.setClosedDate(LocalDateTime.now());
+        Ticket updatedTicket = ticketRepository.save(existingTicket);
+        return convertToDto(updatedTicket);
+    }
+
+    private void validateTicketBeforeClosing(Ticket existingTicket) {
+        if(existingTicket.getResolutionSummary() == null
+                || existingTicket.getResolutionSummary().isEmpty()) {
+            throw new MissingResolutionSummaryException(ErrorMessages.RESOLUTION_SUMMARY_REQUIRED);
+        }
+        if(existingTicket.getStatus() != Status.RESOLVED) {
+            throw new InvalidTicketStateException(ErrorMessages.ONLY_RESOLVED_TICKETS_CAN_BE_CLOSED);
+        }
+    }
 
 }

@@ -5,6 +5,19 @@ import java.util.Objects;
 
 public class Ticket {
 
+    @Override
+    public String toString() {
+        return "Ticket{" +
+                "id=" + id +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                ", createdTime=" + createdTime +
+                ", closedDate=" + closedDate +
+                ", resolutionSummary='" + resolutionSummary + '\'' +
+                ", assignedAgent=" + assignedAgent +
+                '}';
+    }
+
     private Long id;
     private String description;
     private Status status;

@@ -1,10 +1,7 @@
 package com.learnings.ticketapi.service;
 
 import com.learnings.ticketapi.dto.TicketDto;
-import com.learnings.ticketapi.exception.AgentNotFoundException;
-import com.learnings.ticketapi.exception.InvalidTicketStateException;
-import com.learnings.ticketapi.exception.MissingDescriptionException;
-import com.learnings.ticketapi.exception.TicketNotFoundException;
+import com.learnings.ticketapi.exception.*;
 import com.learnings.ticketapi.model.Agent;
 import com.learnings.ticketapi.model.Status;
 import com.learnings.ticketapi.model.Ticket;
@@ -174,5 +171,60 @@ public class TicketServiceTest {
 
         assertThrows(InvalidTicketStateException.class,
                 () -> ticketService.resolveTicket(ticketId));
+    }
+
+    @Test
+    void givenResolvedWithSummary_whenClosing_thenStatusIsClosed() {
+        Long ticketId = 1L;
+        String description = "description";
+        String resolutionSummary = "Summary.";
+        Ticket ticket = new Ticket(ticketId, description, Status.RESOLVED, LocalDateTime.now());
+        ticket.setResolutionSummary(resolutionSummary);
+
+        Ticket savedTicket = new Ticket(ticketId, description, Status.CLOSED, LocalDateTime.now());
+        savedTicket.setResolutionSummary(resolutionSummary);
+        savedTicket.setClosedDate(LocalDateTime.now());
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.save(any(Ticket.class))).thenReturn(savedTicket);
+
+        TicketDto updatedTicket = ticketService.closeTicket(ticketId);
+
+        assertEquals(Status.CLOSED, updatedTicket.status());
+        assertNotNull(updatedTicket.closedDate());
+    }
+
+    @Test
+    void givenNonExistentTicket_whenClosing_thenThrowException() {
+        Long nonExistentTicketId = 999L;
+
+        when(ticketRepository.findById(nonExistentTicketId)).thenReturn(Optional.empty());
+
+        assertThrows(TicketNotFoundException.class, () -> ticketService.closeTicket(nonExistentTicketId));
+    }
+
+    @Test
+    void givenResolvedTicketWithoutSummary_whenClosing_thenThrowException() {
+        Long ticketId = 1L;
+        String description = "description";
+        Ticket ticket = new Ticket(ticketId, description, Status.RESOLVED, LocalDateTime.now());
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+
+        assertThrows(MissingResolutionSummaryException.class, () -> ticketService.closeTicket(ticketId));
+    }
+
+    @Test
+    void givenTicketNotInResolvedState_whenClosing_thenThrowException() {
+        Long ticketId = 1L;
+        String description = "description";
+        String resolutionSummary = "summary.";
+        Ticket ticket = new Ticket(ticketId, description, Status.NEW, LocalDateTime.now());
+        ticket.setResolutionSummary(resolutionSummary);
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+
+        assertThrows(InvalidTicketStateException.class,
+                () -> ticketService.closeTicket(ticketId));
     }
 }
