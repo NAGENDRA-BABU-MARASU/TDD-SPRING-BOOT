@@ -1,28 +1,26 @@
 package com.learnings.ticketapi.model;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
 public class Ticket {
 
-    @Override
-    public String toString() {
-        return "Ticket{" +
-                "id=" + id +
-                ", description='" + description + '\'' +
-                ", status=" + status +
-                ", createdTime=" + createdTime +
-                ", closedDate=" + closedDate +
-                ", resolutionSummary='" + resolutionSummary + '\'' +
-                ", assignedAgent=" + assignedAgent +
-                '}';
-    }
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String description;
+
+    @Enumerated(EnumType.STRING)
     private Status status;
+
     private LocalDateTime createdTime;
+
     private LocalDateTime closedDate;
+
     private String resolutionSummary;
 
     private Agent assignedAgent;

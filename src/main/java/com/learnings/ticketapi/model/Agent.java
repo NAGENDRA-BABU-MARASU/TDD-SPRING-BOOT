@@ -1,10 +1,22 @@
 package com.learnings.ticketapi.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Agent {
+@Entity
+public class Agent implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+
     public Agent() {}
 
     public Agent(Long id, String name) {
