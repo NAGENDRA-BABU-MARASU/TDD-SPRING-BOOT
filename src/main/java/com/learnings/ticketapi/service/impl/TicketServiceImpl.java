@@ -35,7 +35,7 @@ public class TicketServiceImpl implements TicketService {
         Ticket newTicket = new Ticket();
         newTicket.setDescription(ticketDto.description());
         newTicket.setStatus(Status.NEW);
-        newTicket.setCreatedTime(LocalDateTime.now());
+        newTicket.setCreatedDate(LocalDateTime.now());
 
         Ticket savedTicket = ticketRepository.save(newTicket);
 
@@ -66,7 +66,7 @@ public class TicketServiceImpl implements TicketService {
                 ticket.getId(),
                 ticket.getDescription(),
                 ticket.getStatus(),
-                ticket.getCreatedTime(),
+                ticket.getCreatedDate(),
                 ticket.getClosedDate(),
                 ticket.getAssignedAgent() != null ? ticket.getAssignedAgent().getName() : null,
                 ticket.getResolutionSummary()

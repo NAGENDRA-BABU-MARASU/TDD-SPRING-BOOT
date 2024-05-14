@@ -17,21 +17,23 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    private LocalDateTime createdTime;
+    private LocalDateTime createdDate;
 
     private LocalDateTime closedDate;
 
     private String resolutionSummary;
 
+    @ManyToOne
+    @JoinColumn(name = "assignedAgentId")
     private Agent assignedAgent;
 
     public Ticket() {}
 
-    public Ticket(Long id,String description, Status status, LocalDateTime createdTime) {
+    public Ticket(Long id,String description, Status status, LocalDateTime createdDate) {
         this.id = id;
         this.description = description;
         this.status = status;
-        this.createdTime = createdTime;
+        this.createdDate = createdDate;
     }
 
     public Long getId() {
@@ -58,12 +60,12 @@ public class Ticket {
         this.status = status;
     }
 
-    public LocalDateTime getCreatedTime() {
-        return createdTime;
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
     }
 
-    public void setCreatedTime(LocalDateTime createdTime) {
-        this.createdTime = createdTime;
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
     }
 
     public LocalDateTime getClosedDate() {
@@ -95,11 +97,11 @@ public class Ticket {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Ticket ticket = (Ticket) o;
-        return Objects.equals(id, ticket.id) && Objects.equals(description, ticket.description) && status == ticket.status && Objects.equals(createdTime, ticket.createdTime) && Objects.equals(closedDate, ticket.closedDate) && Objects.equals(resolutionSummary, ticket.resolutionSummary);
+        return Objects.equals(id, ticket.id) && Objects.equals(description, ticket.description) && status == ticket.status && Objects.equals(createdDate, ticket.createdDate) && Objects.equals(closedDate, ticket.closedDate) && Objects.equals(resolutionSummary, ticket.resolutionSummary);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, description, status, createdTime, closedDate, resolutionSummary);
+        return Objects.hash(id, description, status, createdDate, closedDate, resolutionSummary);
     }
 }

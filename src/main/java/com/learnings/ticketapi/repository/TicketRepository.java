@@ -10,13 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface TicketRepository extends JpaRepository<Ticket, Long> {
-    @Query("SELECT t FROM Ticket t")
-    List<Ticket> findWithFilters(
-            List<Status> statuses,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            String assignedAgent
-    );
+public interface TicketRepository extends JpaRepository<Ticket, Long>, TicketFilterRepository {
 
 }
